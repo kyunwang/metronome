@@ -7,7 +7,7 @@ import click2 from './click2.wav';
 class App extends Component {
 	state = {
 		isPlaying: false,
-		bmp: 100,
+		bpm: 100,
 		count: 0,
 		beatsPerMeasure: 4,
 	};
@@ -17,30 +17,54 @@ class App extends Component {
 	click1 = new Audio(click1);
 	click2 = new Audio(click2);
 
-	handleBmpChange = event => {
-		const bmp = event.target.value;
-		this.setState({ bmp });
+	handleBpmChange = event => {
+		const bpm = event.target.value;
+		this.setState({ bpm });
 	};
 
 	startStop = () => {
-		this.click1.play();
+		const { isPlaying, bpm } = this.state;
+
+		if (this.state.isPlaying) {
+			clearInterval(this.timer);
+			this.setState({ isPlaying: false });
+		} else {
+			this.timer = setInterval(this.playClick, (60 / this.state.bpm) * 1000);
+			this.setState({ count: 0, isPlaying: true }, this.playClick);
+		}
+	};
+
+	playClick = () => {
+		const { count, beatsPerMeasure } = this.state;
+
+		// The first sound will have a different sound then the rest
+		if (count % beatsPerMeasure === 0) {
+			this.click2.play();
+		} else {
+			this.click1.play();
+		}
+
+		// Keep track which beat to play
+		this.setState(prevState => ({
+			count: (prevState.count + 1) % prevState.beatsPerMeasure,
+		}));
 	};
 
 	render() {
-		const { bmp, isPlaying } = this.state;
+		const { bpm, isPlaying } = this.state;
 
 		return (
 			<div className="metronome">
 				<div className="bpm-slider">
-					<div>{bmp} BMP</div>
+					<div>{bpm} bpm</div>
 					<input
 						type="range"
 						min="60"
 						max="240"
-						value={bmp}
+						value={bpm}
 						name=""
 						id=""
-						onChange={this.handleBmpChange}
+						onChange={this.handleBpmChange}
 					/>
 				</div>
 				<button onClick={this.startStop}>{isPlaying ? 'Stop' : 'Start'}</button>
