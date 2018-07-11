@@ -19,17 +19,29 @@ class App extends Component {
 
 	handleBpmChange = event => {
 		const bpm = event.target.value;
-		this.setState({ bpm });
+
+		if (this.state.isPlaying) {
+			// Stop the old timer and start a new one
+			clearInterval(this.timer);
+			this.timer = setInterval(this.playClick, (60 / bpm) * 1000);
+
+			this.setState({
+				count: 0,
+				bpm,
+			});
+		} else {
+			this.setState({ bpm });
+		}
 	};
 
 	startStop = () => {
 		const { isPlaying, bpm } = this.state;
 
-		if (this.state.isPlaying) {
+		if (isPlaying) {
 			clearInterval(this.timer);
 			this.setState({ isPlaying: false });
 		} else {
-			this.timer = setInterval(this.playClick, (60 / this.state.bpm) * 1000);
+			this.timer = setInterval(this.playClick, (60 / bpm) * 1000);
 			this.setState({ count: 0, isPlaying: true }, this.playClick);
 		}
 	};
